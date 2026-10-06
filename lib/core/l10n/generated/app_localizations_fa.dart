@@ -701,6 +701,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get validationLastNameRequired => 'لطفاً نام خانوادگی را وارد کنید';
 
   @override
+  String get validationEndBeforeStart =>
+      'تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد';
+
+  @override
   String get errorGeneric => 'مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
 
   @override

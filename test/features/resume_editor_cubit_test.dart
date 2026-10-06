@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:resumeyar/core/theme/app_spacing.dart';
 import 'package:resumeyar/data/local/resume_file_store.dart';
 import 'package:resumeyar/data/repositories/resume_repository_impl.dart';
 import 'package:resumeyar/domain/models/personal_info.dart';
@@ -13,9 +12,12 @@ void main() {
   late ResumeRepositoryImpl repository;
   late Resume seed;
 
-  /// Slightly longer than the debounce, so an autosave has definitely landed.
-  Future<void> waitForAutosave() =>
-      Future<void>.delayed(AppDurations.autosaveDebounce * 2);
+  /// Wait for the real write to finish, including disk I/O on a busy machine.
+  Future<void> waitForAutosave(ResumeEditorCubit cubit) async {
+    await cubit.stream
+        .firstWhere((state) => !state.hasPendingChanges && !state.isSaving)
+        .timeout(const Duration(seconds: 10));
+  }
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('resumeyar_editor_test');
@@ -62,10 +64,8 @@ void main() {
     final cubit = makeCubit();
     addTearDown(cubit.close);
 
-    cubit.edit(
-      (resume) => resume.copyWith(professionalSummary: 'خلاصه'),
-    );
-    await waitForAutosave();
+    cubit.edit((resume) => resume.copyWith(professionalSummary: 'خلاصه'));
+    await waitForAutosave(cubit);
 
     expect(repository.byId('a')!.professionalSummary, 'خلاصه');
     expect(cubit.state.hasPendingChanges, isFalse);
@@ -83,7 +83,7 @@ void main() {
     for (final text in <String>['a', 'ab', 'abc', 'abcd']) {
       cubit.edit((resume) => resume.copyWith(professionalSummary: text));
     }
-    await waitForAutosave();
+    await waitForAutosave(cubit);
     await subscription.cancel();
 
     expect(writes, 1);
@@ -127,11 +127,14 @@ void main() {
 
       // Stands in for the preview screen editing through its own cubit.
       await repository.save(
-        repository.byId('a')!.copyWith(
-          templateSettings: repository.byId('a')!.templateSettings.copyWith(
-            accentColorValue: 0xFF0F766E,
-          ),
-        ),
+        repository
+            .byId('a')!
+            .copyWith(
+              templateSettings: repository
+                  .byId('a')!
+                  .templateSettings
+                  .copyWith(accentColorValue: 0xFF0F766E),
+            ),
       );
 
       cubit.reload();
@@ -153,39 +156,60 @@ void main() {
       expect(cubit.state.resume.title, 'در حال تایپ');
     });
 
-    test('a preview-made change is not overwritten by the next autosave',
-        () async {
-      final cubit = makeCubit();
-      addTearDown(cubit.close);
+    test(
+      'a preview-made change is not overwritten by the next autosave',
+      () async {
+        final cubit = makeCubit();
+        addTearDown(cubit.close);
 
-      // The editor flushes before opening the preview.
-      cubit.edit((resume) => resume.copyWith(professionalSummary: 'خلاصه'));
-      await cubit.save();
+        // The editor flushes before opening the preview.
+        cubit.edit((resume) => resume.copyWith(professionalSummary: 'خلاصه'));
+        await cubit.save();
 
-      // The preview changes the template through a separate cubit.
-      final fromPreview = ResumeEditorCubit(
-        repository: repository,
-        initial: repository.byId('a')!,
-      );
-      fromPreview.edit(
-        (resume) => resume.copyWith(
-          templateSettings: resume.templateSettings.copyWith(
-            accentColorValue: 0xFF9B1C31,
+        // The preview changes the template through a separate cubit.
+        final fromPreview = ResumeEditorCubit(
+          repository: repository,
+          initial: repository.byId('a')!,
+        );
+        fromPreview.edit(
+          (resume) => resume.copyWith(
+            templateSettings: resume.templateSettings.copyWith(
+              accentColorValue: 0xFF9B1C31,
+            ),
           ),
-        ),
-      );
-      await fromPreview.save();
-      await fromPreview.close();
+        );
+        await fromPreview.save();
+        await fromPreview.close();
 
-      // Back in the editor: refresh, then keep typing.
-      cubit.reload();
-      cubit.edit((resume) => resume.copyWith(professionalSummary: 'خلاصه تازه'));
-      await cubit.save();
+        // Back in the editor: refresh, then keep typing.
+        cubit.reload();
+        cubit.edit(
+          (resume) => resume.copyWith(professionalSummary: 'خلاصه تازه'),
+        );
+        await cubit.save();
 
-      final stored = repository.byId('a')!;
-      expect(stored.professionalSummary, 'خلاصه تازه');
-      expect(stored.templateSettings.accentColorValue, 0xFF9B1C31);
-    });
+        final stored = repository.byId('a')!;
+        expect(stored.professionalSummary, 'خلاصه تازه');
+        expect(stored.templateSettings.accentColorValue, 0xFF9B1C31);
+      },
+    );
+  });
+
+  test('an edit made while a save is in flight is not reverted', () async {
+    final cubit = makeCubit();
+    addTearDown(cubit.close);
+
+    cubit.edit((resume) => resume.copyWith(professionalSummary: 'اول'));
+    final inFlight = cubit.save();
+    cubit.edit((resume) => resume.copyWith(professionalSummary: 'دوم'));
+    await inFlight;
+
+    expect(cubit.state.resume.professionalSummary, 'دوم');
+    expect(cubit.state.hasPendingChanges, isTrue);
+
+    await waitForAutosave(cubit);
+    expect(repository.byId('a')!.professionalSummary, 'دوم');
+    expect(cubit.state.hasPendingChanges, isFalse);
   });
 
   test('state survives repeated edits across different sections', () async {

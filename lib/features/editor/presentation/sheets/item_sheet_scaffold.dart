@@ -17,12 +17,17 @@ Future<T?> showItemSheet<T>(
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: false,
-    builder: (sheetContext) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.85,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: builder,
+    builder: (sheetContext) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+      ),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: builder,
+      ),
     ),
   );
 }
@@ -41,8 +46,8 @@ Future<T?> showCompactItemSheet<T>(
   );
 }
 
-/// Body for [showCompactItemSheet]: title, fields, save button, no scroll view
-/// of its own beyond keyboard avoidance.
+/// Short forms grow to fit their contents and scroll when the keyboard or a
+/// small display leaves insufficient space.
 class CompactItemSheetBody extends StatelessWidget {
   const CompactItemSheetBody({
     super.key,
@@ -62,27 +67,29 @@ class CompactItemSheetBody extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-        top: AppSpacing.sm,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
-      ),
-      child: Form(
-        key: formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(title, style: theme.textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.xl),
-            for (final child in children) ...<Widget>[
-              child,
-              const SizedBox(height: AppSpacing.lg),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.sm,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
+        ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(title, style: theme.textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.xl),
+              for (final child in children) ...<Widget>[
+                child,
+                const SizedBox(height: AppSpacing.lg),
+              ],
+              FilledButton(onPressed: onSave, child: Text(l10n.commonSave)),
             ],
-            FilledButton(onPressed: onSave, child: Text(l10n.commonSave)),
-          ],
+          ),
         ),
       ),
     );
@@ -121,9 +128,7 @@ class ItemSheetBody extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
-              Expanded(
-                child: Text(title, style: theme.textTheme.titleLarge),
-              ),
+              Expanded(child: Text(title, style: theme.textTheme.titleLarge)),
               IconButton(
                 tooltip: l10n.commonClose,
                 onPressed: () => Navigator.of(context).pop(),
@@ -138,11 +143,11 @@ class ItemSheetBody extends StatelessWidget {
             key: formKey,
             child: ListView(
               controller: controller,
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
                 AppSpacing.lg,
                 AppSpacing.lg,
-                MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxl,
+                AppSpacing.xxl,
               ),
               children: <Widget>[
                 for (final child in children) ...<Widget>[

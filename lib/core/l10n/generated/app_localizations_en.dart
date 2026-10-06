@@ -701,6 +701,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationLastNameRequired => 'Please enter your last name';
 
   @override
+  String get validationEndBeforeStart =>
+      'The end date can\'t be before the start date';
+
+  @override
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override

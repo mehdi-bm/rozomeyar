@@ -24,7 +24,8 @@ class ResumeEditorPage extends StatefulWidget {
   State<ResumeEditorPage> createState() => _ResumeEditorPageState();
 }
 
-class _ResumeEditorPageState extends State<ResumeEditorPage> {
+class _ResumeEditorPageState extends State<ResumeEditorPage>
+    with WidgetsBindingObserver {
   final PageController _pageController = PageController();
   int _index = 0;
 
@@ -43,7 +44,23 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      final cubit = context.read<ResumeEditorCubit>();
+      if (cubit.state.hasPendingChanges) cubit.save();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     super.dispose();
   }
@@ -81,7 +98,8 @@ class _ResumeEditorPageState extends State<ResumeEditorPage> {
     return BlocListener<ResumeEditorCubit, ResumeEditorState>(
       listenWhen: (previous, current) =>
           previous.failure != current.failure && current.failure != null,
-      listener: (context, state) => showFailureSnackBar(context, state.failure!),
+      listener: (context, state) =>
+          showFailureSnackBar(context, state.failure!),
       child: Scaffold(
         appBar: AppBar(
           title: BlocBuilder<ResumeEditorCubit, ResumeEditorState>(

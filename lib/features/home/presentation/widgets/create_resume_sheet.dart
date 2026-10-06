@@ -18,6 +18,7 @@ Future<CreateResumeResult?> showCreateResumeSheet(
   return showModalBottomSheet<CreateResumeResult>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (sheetContext) =>
         _CreateResumeSheet(defaultLanguage: defaultLanguage),
   );
@@ -64,59 +65,61 @@ class _CreateResumeSheetState extends State<_CreateResumeSheet> {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-        top: AppSpacing.sm,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(l10n.homeCreateSheetTitle, style: theme.textTheme.titleLarge),
-          const SizedBox(height: AppSpacing.xl),
-          TextField(
-            controller: _titleController,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _submit(),
-            decoration: InputDecoration(
-              labelText: l10n.homeCreateSheetName,
-              hintText: l10n.homeCreateSheetNameHint,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            l10n.homeCreateSheetLanguage,
-            style: theme.textTheme.labelLarge,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SegmentedButton<ResumeLanguage>(
-            segments: <ButtonSegment<ResumeLanguage>>[
-              ButtonSegment<ResumeLanguage>(
-                value: ResumeLanguage.persian,
-                label: Text(l10n.resumeLanguagePersian),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.sm,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(l10n.homeCreateSheetTitle, style: theme.textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.xl),
+            TextField(
+              controller: _titleController,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+              decoration: InputDecoration(
+                labelText: l10n.homeCreateSheetName,
+                hintText: l10n.homeCreateSheetNameHint,
               ),
-              ButtonSegment<ResumeLanguage>(
-                value: ResumeLanguage.english,
-                label: Text(l10n.resumeLanguageEnglish),
-              ),
-            ],
-            selected: <ResumeLanguage>{_language},
-            onSelectionChanged: (selection) =>
-                setState(() => _language = selection.first),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _submit,
-              child: Text(l10n.homeCreateCta),
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              l10n.homeCreateSheetLanguage,
+              style: theme.textTheme.labelLarge,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SegmentedButton<ResumeLanguage>(
+              segments: <ButtonSegment<ResumeLanguage>>[
+                ButtonSegment<ResumeLanguage>(
+                  value: ResumeLanguage.persian,
+                  label: Text(l10n.resumeLanguagePersian),
+                ),
+                ButtonSegment<ResumeLanguage>(
+                  value: ResumeLanguage.english,
+                  label: Text(l10n.resumeLanguageEnglish),
+                ),
+              ],
+              selected: <ResumeLanguage>{_language},
+              onSelectionChanged: (selection) =>
+                  setState(() => _language = selection.first),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _submit,
+                child: Text(l10n.homeCreateCta),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -138,8 +141,7 @@ Future<String?> showRenameResumeDialog(
           controller: controller,
           autofocus: true,
           textInputAction: TextInputAction.done,
-          onSubmitted: (value) =>
-              Navigator.of(dialogContext).pop(value.trim()),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value.trim()),
           decoration: InputDecoration(labelText: l10n.homeCreateSheetName),
         ),
         actions: <Widget>[

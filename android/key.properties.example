@@ -1,0 +1,16 @@
+# Template for android/key.properties — copy to `key.properties` and fill in.
+#
+# key.properties, *.jks and *.keystore are all gitignored. Never commit them,
+# never attach them to a GitHub release, never put them in a public repo:
+# an Android signing key cannot be revoked. Anyone holding it can publish an
+# APK that the OS accepts as a genuine update to this app, and the only remedy
+# is shipping a brand-new applicationId and losing every existing install.
+#
+# Back the .jks file and these passwords up somewhere private (a password
+# manager). Losing them means you can never publish an update to this app
+# again — Cafe Bazaar and Play both reject an APK signed with a different key.
+
+storePassword=<the store password you chose>
+keyPassword=<the key password you chose>
+keyAlias=resumeyar
+storeFile=resumeyar-release.jks

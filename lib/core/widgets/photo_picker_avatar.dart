@@ -49,15 +49,22 @@ class PhotoPickerAvatar extends StatelessWidget {
                   // Decoding a multi-megapixel phone photo at full size just to
                   // draw a 96dp avatar wastes memory; 3x the logical size is
                   // plenty.
-                  backgroundImage: _hasPhoto
-                      ? ResizeImage(
-                          FileImage(File(photoPath!)),
-                          width: (size * 3).round(),
-                          height: (size * 3).round(),
-                        )
-                      : null,
                   child: _hasPhoto
-                      ? null
+                      ? ClipOval(
+                          child: Image.file(
+                            File(photoPath!),
+                            width: size,
+                            height: size,
+                            fit: BoxFit.cover,
+                            cacheWidth: (size * 3).round(),
+                            cacheHeight: (size * 3).round(),
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person_outline,
+                              size: size * 0.45,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        )
                       : Icon(
                           Icons.person_outline,
                           size: size * 0.45,
@@ -107,14 +114,12 @@ class PhotoPickerAvatar extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
               title: Text(l10n.photoFromCamera),
-              onTap: () =>
-                  Navigator.of(sheetContext).pop(_PhotoAction.camera),
+              onTap: () => Navigator.of(sheetContext).pop(_PhotoAction.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: Text(l10n.photoFromGallery),
-              onTap: () =>
-                  Navigator.of(sheetContext).pop(_PhotoAction.gallery),
+              onTap: () => Navigator.of(sheetContext).pop(_PhotoAction.gallery),
             ),
             if (_hasPhoto)
               ListTile(
@@ -131,12 +136,10 @@ class PhotoPickerAvatar extends StatelessWidget {
       ),
     );
 
-    if (source == null) return;
+    if (source == null || !context.mounted) return;
 
     if (source == _PhotoAction.remove) {
-      final previous = photoPath;
       onChanged(null);
-      await ImageStorage.deleteIfExists(previous);
       return;
     }
 
@@ -150,12 +153,16 @@ class PhotoPickerAvatar extends StatelessWidget {
         maxHeight: 1024,
         imageQuality: 85,
       );
-      if (picked == null) return;
+      if (picked == null || !context.mounted) return;
 
-      final previous = photoPath;
       final stored = await ImageStorage.persist(picked.path);
+      if (!context.mounted) {
+        await ImageStorage.deleteIfExists(stored);
+        return;
+      }
+      // The repository cleans up the previous photo after saving, and keeps
+      // it while another resume (a duplicate or translation) still uses it.
       onChanged(stored);
-      await ImageStorage.deleteIfExists(previous);
     } on AppFailure catch (failure) {
       if (context.mounted) showFailureSnackBar(context, failure.kind);
     } catch (_) {

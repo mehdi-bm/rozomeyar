@@ -245,6 +245,7 @@
   "validationInvalidUrl": "Enter a valid URL",
   "validationFirstNameRequired": "Please enter your first name",
   "validationLastNameRequired": "Please enter your last name",
+  "validationEndBeforeStart": "The end date can't be before the start date",
 
   "errorGeneric": "Something went wrong. Please try again.",
   "errorPdfGeneration": "Could not generate the PDF. Please try again.",

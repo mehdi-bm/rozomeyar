@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -146,5 +147,18 @@ class ResumePdfService {
         ),
       );
     });
+  }
+
+  /// Saves through the system picker so the exported PDF is accessible outside
+  /// the app. A cancelled dialog returns null and is not a storage failure.
+  Future<Uri?> export(Resume resume, Uint8List bytes) {
+    return guard(
+      AppFailureKind.storageWrite,
+      () => FilePicker.saveFile(
+        fileName: fileName(resume),
+        bytes: bytes,
+        mimeType: 'application/pdf',
+      ),
+    );
   }
 }

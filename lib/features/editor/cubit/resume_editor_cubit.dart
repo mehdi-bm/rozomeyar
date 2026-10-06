@@ -92,10 +92,18 @@ class ResumeEditorCubit extends Cubit<ResumeEditorState> {
     _debounce?.cancel();
     if (isClosed) return;
     emit(state.copyWith(isSaving: true, clearFailure: true));
+    final snapshot = state.resume;
     try {
-      await repository.save(state.resume);
+      await repository.save(snapshot);
       if (isClosed) return;
-      final stored = repository.byId(state.resume.id) ?? state.resume;
+      if (state.resume != snapshot) {
+        // Edited while the write was in flight. Keep the newer edit — adopting
+        // the stored copy would silently revert it — and let the save that
+        // edit already scheduled write it.
+        emit(state.copyWith(isSaving: false));
+        return;
+      }
+      final stored = repository.byId(snapshot.id) ?? snapshot;
       emit(
         ResumeEditorState(
           resume: stored,

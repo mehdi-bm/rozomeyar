@@ -41,6 +41,11 @@ class _PreviewPageState extends State<PreviewPage> {
     final cubit = context.read<ResumeEditorCubit>();
     try {
       await cubit.save();
+      if (!mounted) return;
+      if (cubit.state.failure != null) {
+        showFailureSnackBar(context, cubit.state.failure!);
+        return;
+      }
       final resume = cubit.state.resume;
       final bytes = await _service.build(resume);
       await action(resume, bytes);
@@ -56,9 +61,9 @@ class _PreviewPageState extends State<PreviewPage> {
   Future<void> _export() async {
     final l10n = context.l10n;
     await _run((resume, bytes) async {
-      final file = await _service.saveToFile(resume, bytes);
-      if (!mounted) return;
-      showAppSnackBar(context, l10n.previewSavedAt(file.path));
+      final destination = await _service.export(resume, bytes);
+      if (!mounted || destination == null) return;
+      showAppSnackBar(context, l10n.previewSaved);
     });
   }
 
@@ -111,6 +116,9 @@ class _PreviewPageState extends State<PreviewPage> {
     );
     // Persist whatever was changed in the sheet before the preview re-renders.
     await cubit.save();
+    if (mounted && cubit.state.failure != null) {
+      showFailureSnackBar(context, cubit.state.failure!);
+    }
   }
 
   @override
@@ -148,9 +156,7 @@ class _PreviewPageState extends State<PreviewPage> {
                 useActions: true,
                 shouldRepaint: true,
                 pdfFileName: _service.fileName(resume),
-                loadingWidget: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                loadingWidget: const Center(child: CircularProgressIndicator()),
                 onError: (context, error) => Center(
                   child: Padding(
                     padding: AppSpacing.pagePadding,
@@ -254,9 +260,8 @@ class _TemplatePicker extends StatelessWidget {
                     selected: settings.templateId == template.id,
                     accent: settings.accent.color,
                     language: language,
-                    onTap: () => onChanged(
-                      settings.copyWith(templateId: template.id),
-                    ),
+                    onTap: () =>
+                        onChanged(settings.copyWith(templateId: template.id)),
                   ),
                 ),
               ),

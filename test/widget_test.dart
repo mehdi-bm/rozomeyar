@@ -42,8 +42,9 @@ void main() {
     return dependencies;
   }
 
-  testWidgets('first launch seeds the sample resume and shows it on home',
-      (tester) async {
+  testWidgets('first launch seeds the sample resume and shows it on home', (
+    tester,
+  ) async {
     final dependencies = await pumpApp(tester);
 
     expect(dependencies.resumeRepository.all, hasLength(1));
@@ -51,8 +52,9 @@ void main() {
     expect(find.text('نمونه رزومه'), findsWidgets);
   });
 
-  testWidgets('the sample resume is not re-seeded on a later launch',
-      (tester) async {
+  testWidgets('the sample resume is not re-seeded on a later launch', (
+    tester,
+  ) async {
     final first = await buildDependencies();
     await first.resumeRepository.delete(first.resumeRepository.all.single.id);
 
@@ -63,8 +65,9 @@ void main() {
     expect(find.text('اولین رزومه حرفه‌ای خود را بسازید'), findsOneWidget);
   });
 
-  testWidgets('creating a resume from the empty state opens the editor',
-      (tester) async {
+  testWidgets('creating a resume from the empty state opens the editor', (
+    tester,
+  ) async {
     final first = await buildDependencies();
     await first.resumeRepository.delete(first.resumeRepository.all.single.id);
 
@@ -85,8 +88,9 @@ void main() {
     expect(find.text('اطلاعات شخصی'), findsWidgets);
   });
 
-  testWidgets('editor input autosaves without an explicit save action',
-      (tester) async {
+  testWidgets('editor input autosaves without an explicit save action', (
+    tester,
+  ) async {
     final dependencies = await pumpApp(tester);
     final resumeId = dependencies.resumeRepository.all.single.id;
 
@@ -102,6 +106,25 @@ void main() {
       dependencies.resumeRepository.byId(resumeId)!.personalInfo.firstName,
       'سارا',
     );
+  });
+
+  testWidgets('backgrounding the editor immediately saves pending input', (
+    tester,
+  ) async {
+    final dependencies = await pumpApp(tester);
+    final id = dependencies.resumeRepository.all.single.id;
+    await tester.tap(find.text('ویرایش').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'نام'), 'سارا');
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await tester.pump();
+    expect(
+      dependencies.resumeRepository.byId(id)!.personalInfo.firstName,
+      'سارا',
+    );
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('editor state survives moving between steps', (tester) async {
@@ -130,8 +153,9 @@ void main() {
     );
   });
 
-  testWidgets('starring a resume reveals a filter that narrows the list',
-      (tester) async {
+  testWidgets('starring a resume reveals a filter that narrows the list', (
+    tester,
+  ) async {
     final dependencies = await pumpApp(tester);
     // A second resume in another language, so language chips appear too.
     await dependencies.resumeRepository.save(
@@ -228,8 +252,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('an English resume types left-to-right in a Persian UI',
-        (tester) async {
+    testWidgets('an English resume types left-to-right in a Persian UI', (
+      tester,
+    ) async {
       await pumpApp(tester);
       await openEditorFor(tester, ResumeLanguage.english);
 
@@ -245,8 +270,9 @@ void main() {
       expect(directionOf(tester, 'عنوان شغلی'), TextDirection.rtl);
     });
 
-    testWidgets('phone stays left-to-right regardless of resume language',
-        (tester) async {
+    testWidgets('phone stays left-to-right regardless of resume language', (
+      tester,
+    ) async {
       // A tall surface so the whole personal-info step is laid out at once —
       // a ListView does not build fields that are below the fold.
       tester.view.physicalSize = const Size(1080, 4000);
@@ -264,8 +290,9 @@ void main() {
     });
   });
 
-  testWidgets('translating a resume creates a second, translated resume',
-      (tester) async {
+  testWidgets('translating a resume creates a second, translated resume', (
+    tester,
+  ) async {
     final dependencies = await pumpApp(tester);
     final original = dependencies.resumeRepository.all.single;
 
@@ -280,10 +307,10 @@ void main() {
     final segmented = tester.widget<SegmentedButton<ResumeLanguage>>(
       find.byType(SegmentedButton<ResumeLanguage>),
     );
-    expect(
-      segmented.segments.map((s) => s.value).toSet(),
-      <ResumeLanguage>{ResumeLanguage.arabic, ResumeLanguage.english},
-    );
+    expect(segmented.segments.map((s) => s.value).toSet(), <ResumeLanguage>{
+      ResumeLanguage.arabic,
+      ResumeLanguage.english,
+    });
 
     await tester.tap(find.text('انگلیسی'));
     await tester.pumpAndSettle();
@@ -304,8 +331,9 @@ void main() {
     );
   });
 
-  testWidgets('switching the app language to English relocalizes the UI',
-      (tester) async {
+  testWidgets('switching the app language to English relocalizes the UI', (
+    tester,
+  ) async {
     await pumpApp(tester);
 
     await tester.tap(find.byIcon(Icons.settings_outlined));
@@ -320,8 +348,9 @@ void main() {
     expect(find.text('App language'), findsOneWidget);
   });
 
-  testWidgets('the default resume language drives the create sheet',
-      (tester) async {
+  testWidgets('the default resume language drives the create sheet', (
+    tester,
+  ) async {
     final dependencies = await pumpApp(tester);
     await dependencies.settingsRepository.setDefaultResumeLanguage(
       ResumeLanguage.english,

@@ -47,20 +47,48 @@ class ResumeRepositoryImpl implements ResumeRepository {
     if (!_controller.isClosed) _controller.add(all);
   }
 
+  /// Serializes disk and cache changes, including deletes, for each resume.
+  final Map<String, Future<void>> _operations = <String, Future<void>>{};
+
+  Future<void> _enqueue(String id, Future<void> Function() action) async {
+    final previous = _operations[id] ?? Future<void>.value();
+    final operation = previous.catchError((Object _) {}).then((_) => action());
+    _operations[id] = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_operations[id], operation)) _operations.remove(id);
+    }
+  }
+
   @override
   Future<void> save(Resume resume) async {
     final stamped = resume.copyWith(updatedAt: DateTime.now());
-    await _store.write(stamped);
-    _cache[stamped.id] = stamped;
-    _emit();
+    // Writes to one resume run one at a time. The editor and the preview each
+    // hold a cubit for the same resume, and a debounced autosave can overlap
+    // the save on exit; concurrent writes would race on the same temp file and
+    // could land out of order, leaving an older version on disk.
+    await _enqueue(stamped.id, () async {
+      final previous = _cache[stamped.id];
+      await _store.write(stamped);
+      _cache[stamped.id] = stamped;
+      _emit();
+      if (previous != null &&
+          previous.personalInfo.photoPath != stamped.personalInfo.photoPath) {
+        await _deleteOrphanPhoto(previous);
+      }
+    });
   }
 
   @override
   Future<void> delete(String id) async {
-    final removed = _cache.remove(id);
-    await _store.delete(id);
-    _emit();
-    if (removed != null) await _deleteOrphanPhoto(removed);
+    await _enqueue(id, () async {
+      // Keep the cached resume intact if deleting its file fails.
+      await _store.delete(id);
+      final removed = _cache.remove(id);
+      _emit();
+      if (removed != null) await _deleteOrphanPhoto(removed);
+    });
   }
 
   /// Profile photos live outside the resume file, so deleting a resume should

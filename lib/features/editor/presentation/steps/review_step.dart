@@ -68,11 +68,11 @@ class ReviewStep extends StatelessWidget {
                 final cubit = context.read<ResumeEditorCubit>();
                 // Flush pending edits so the preview renders the latest text.
                 await cubit.save();
-                if (!context.mounted) return;
+                if (!context.mounted || cubit.state.failure != null) return;
                 await context.push(AppRoutes.resumePreview(resume.id));
                 // The preview has its own cubit and may have changed the
                 // template, so pick those changes up before editing resumes.
-                cubit.reload();
+                if (!cubit.isClosed) cubit.reload();
               },
               icon: const Icon(Icons.visibility_outlined),
               label: Text(l10n.commonPreview),

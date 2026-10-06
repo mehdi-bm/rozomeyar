@@ -114,6 +114,10 @@ class DateField extends StatelessWidget {
     return InkWell(
       onTap: enabled
           ? () async {
+              // Otherwise the text field focused before the picker regains
+              // focus when it closes, and the keyboard pops back up over the
+              // date fields and the sheet's save button.
+              FocusScope.of(context).unfocus();
               final picked = await showResumeDatePicker(
                 context,
                 language: language,

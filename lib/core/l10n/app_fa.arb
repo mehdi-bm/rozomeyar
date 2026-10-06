@@ -278,6 +278,7 @@
   "validationInvalidUrl": "آدرس اینترنتی معتبر نیست",
   "validationFirstNameRequired": "لطفاً نام را وارد کنید",
   "validationLastNameRequired": "لطفاً نام خانوادگی را وارد کنید",
+  "validationEndBeforeStart": "تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد",
 
   "errorGeneric": "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.",
   "errorPdfGeneration": "ساخت فایل PDF انجام نشد. لطفاً دوباره تلاش کنید.",

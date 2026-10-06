@@ -1412,6 +1412,12 @@ abstract class AppLocalizations {
   /// **'لطفاً نام خانوادگی را وارد کنید'**
   String get validationLastNameRequired;
 
+  /// No description provided for @validationEndBeforeStart.
+  ///
+  /// In fa, this message translates to:
+  /// **'تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد'**
+  String get validationEndBeforeStart;
+
   /// No description provided for @errorGeneric.
   ///
   /// In fa, this message translates to:
