@@ -1,30 +1,53 @@
-# ResumeYar 1.0.0 — build 15002
+# رزومه‌یار پارسیک — نسخهٔ ۱.۰.۰، ساخت ۱۵۰۰۲
 
-Android APK with improved resume persistence, mobile forms and PDF export.
+نسخهٔ اندروید رزومه‌یار برای ساخت و مدیریت رزومه‌های فارسی، انگلیسی و عربی، با بهبود ذخیره‌سازی، فرم‌های موبایل و خروجی PDF.
 
-## Changes
+## امکانات اپ
 
-- Serialize resume saves and deletes to prevent concurrent writes and deleted resumes reappearing.
-- Preserve profile photos shared by duplicated or translated resumes; clean up old photos after successful saves.
-- Save pending edits when the app enters the background and show storage failures before preview or export.
-- Keep mobile forms scrollable and their save buttons accessible when the keyboard opens.
-- Export PDF through the Android system save dialog, including Downloads.
-- Show a placeholder for missing or damaged profile photos.
-- Keep Android debug builds separate from the installed production app.
-- Improve Android build configuration and add regression and device tests.
+- ساخت و ویرایش رزومه در ۱۱ مرحله: اطلاعات شخصی، خلاصهٔ حرفه‌ای، سوابق کاری، تحصیلات، مهارت‌ها، زبان‌ها، پروژه‌ها، گواهینامه‌ها، لینک‌ها، قالب و بررسی نهایی.
+- سه قالب کلاسیک، مدرن و مینیمال با امکان تغییر رنگ، اندازهٔ متن و نمایش عکس و سطح مهارت‌ها.
+- انتخاب عکس پروفایل از گالری یا دوربین.
+- مدیریت چند رزومه، تغییر نام، تهیهٔ کپی، حذف، علاقه‌مندی‌ها و فیلتر بر اساس زبان.
+- ذخیرهٔ خودکار اطلاعات روی دستگاه و استفادهٔ آفلاین برای ساخت و ویرایش رزومه.
+- پیش‌نمایش واقعی PDF، ذخیره در Downloads یا پوشهٔ دلخواه، اشتراک‌گذاری و چاپ.
+- خروجی و بازیابی پشتیبان اکسل با فایل `.xlsx`.
+- ترجمهٔ رزومه روی دستگاه با Google ML Kit و ایجاد نسخهٔ جدا؛ دانلود اولیهٔ مدل‌ها به اینترنت نیاز دارد.
+- تاریخ شمسی برای رزومهٔ فارسی و تاریخ میلادی برای رزومه‌های انگلیسی و عربی.
+- رابط فارسی و انگلیسی، حالت روشن و تاریک و انتخاب زبان پیش‌فرض رزومه.
 
-## Validation
+## تغییرات و رفع ایرادها
 
-- Flutter analysis: no issues.
-- All 247 unit and widget tests passed.
-- Android emulator integration test passed: 11 editor steps, 9 PDF template/language combinations, disk persistence and Excel backup.
-- Release build 15002 installed on an Android 15 phone. Manual creation, editing, persistence across app restart, deletion, PDF preview, saving to Downloads and opening share/print dialogs passed.
-- Automated integration testing on the phone was blocked by its restriction on installing the separate debug app. Live advertising and translation model downloads were not tested.
+- ذخیره و حذف هم‌زمان به‌ترتیب اجرا می‌شوند تا نوشته‌ها تداخل نکنند و رزومهٔ حذف‌شده دوباره ظاهر نشود.
+- عکس مشترک میان نسخه‌های کپی یا ترجمه حفظ می‌شود؛ پاک‌سازی عکس قدیمی پس از ذخیرهٔ موفق انجام می‌شود.
+- تغییرات هنگام رفتن اپ به پس‌زمینه ذخیره می‌شوند و خطاهای ذخیره پیش از پیش‌نمایش یا خروجی به کاربر نمایش داده می‌شوند.
+- فرم‌ها با کیبورد باز قابل اسکرول‌اند و دکمه‌های ذخیره در دسترس می‌مانند.
+- خروجی PDF از پنجرهٔ استاندارد ذخیرهٔ اندروید استفاده می‌کند.
+- برای عکس گم‌شده یا خراب، تصویر پیش‌فرض نمایش داده می‌شود.
+- نسخهٔ آزمایشی اندروید جدا از نسخهٔ اصلی نصب می‌شود.
+- تنظیمات ساخت اندروید اصلاح و تست‌های مربوط به ایرادهای رفع‌شده و اجرای روی دستگاه اضافه شدند.
 
-## Download
+## نتیجهٔ تست‌ها
 
-Asset: `ResumeYar-v1.0.0-build15002.apk`.
+- تحلیل کد Flutter: بدون خطا و هشدار.
+- هر ۲۴۷ تست واحد و رابط کاربری موفق بودند.
+- تست یکپارچهٔ شبیه‌ساز اندروید موفق بود: ۱۱ مرحلهٔ ویرایش، ۹ ترکیب قالب و زبان PDF، ذخیرهٔ فایل و بکاپ اکسل.
+- نسخهٔ Release روی گوشی اندروید ۱۵ نصب شد. ایجاد، ویرایش، حفظ اطلاعات پس از اجرای مجدد، حذف، پیش‌نمایش PDF، ذخیره در Downloads و باز شدن پنجره‌های اشتراک‌گذاری و چاپ موفق بودند.
+- تست خودکار گوشی به‌دلیل محدودیت نصب اپ آزمایشیِ جدا اجرا نشد. سرویس زندهٔ تبلیغات و دانلود مدل‌های ترجمه بررسی نشده‌اند.
 
-SHA-256: `875D451A51B30A23E60D38F7982384A828B2B8A7516738D73DEB1A4FF8A34BB4`.
+## دانلود
 
-Reproduce with `flutter build apk --release --build-number=15002`.
+[دانلود مستقیم APK اندروید](https://github.com/mehdi-bm/rozomeyar/releases/download/v1.0.0-build15002/ResumeYar-v1.0.0-build15002.apk)
+
+نام فایل: `ResumeYar-v1.0.0-build15002.apk`.
+
+کد بررسی صحت فایل (SHA-256):
+
+```text
+875D451A51B30A23E60D38F7982384A828B2B8A7516738D73DEB1A4FF8A34BB4
+```
+
+فرمان ساخت همین نسخه:
+
+```sh
+flutter build apk --release --build-number=15002
+```
